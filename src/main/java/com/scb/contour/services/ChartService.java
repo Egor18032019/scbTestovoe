@@ -40,17 +40,23 @@ public class ChartService {
 
 
         boolean isRightCoordinate = validateCoordinateChats(x, y, width, height);
+        System.out.println("isRightCoordinate " + isRightCoordinate);
         if (isRightCoordinate) {
-            // передаём файл и путь что бы второй раз к этому не обращаться
-            fileStorageService.insertPartBmp(id, x, y, width, height, image);
+            boolean isHaveThisIdForFileStorage = fileStorageService.fileExists(id)!=null;
+             if(!isHaveThisIdForFileStorage){
+                throw new NotFoundException("Нет файла с таким названием " + id);
+            }else {
+             fileStorageService.insertPartBmp(id, x, y, width, height, image);
+            }
         } else {
+            // тут нужна проверка на то чтобы размеры приходящей картинки были не больше созданной
             throw new ValidationException("Не правильные координаты или размеры ");
         }
     }
 
 
     //    Тело ответа: изображение в формате BMP (цвет в RGB, 24 бита на 1 пиксель).
-    public byte[] getFragment(String id, int x, int y, int width, int height) throws IOException {
+    public byte[] getFragment(String id, int x, int y, int width, int height) throws IOException, ValidationException, NotFoundException {
         Path isExists = fileStorageService.fileExists(id);
         if (isExists != null) {
             BufferedImage chart = ImageIO.read(isExists.toFile());
@@ -66,7 +72,7 @@ public class ChartService {
         }
     }
 
-    public void delete(String id) {
+    public void delete(String id) throws NotFoundException{
         fileStorageService.deleteFile(id);
     }
 

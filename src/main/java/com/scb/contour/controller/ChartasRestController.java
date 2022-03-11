@@ -43,9 +43,12 @@ public class ChartasRestController {
             chartService.addFragment(id, x, y, width, height, image);
 //            Тело ответа пустое.
             return new ResponseEntity<>(HttpStatus.OK);
-        } catch (IOException | NotFoundException | ValidationException e) {
+        } catch (IOException | ValidationException e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (NotFoundException exception) {
+
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
@@ -59,14 +62,22 @@ public class ChartasRestController {
         } catch (IOException e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (NotFoundException exception) {
+
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
     @DeleteMapping(path = "{id}")
     public ResponseEntity<?> deleteChart(@PathVariable String id) {
-        chartService.delete(id);
-        System.out.println("deleteChart " + id);
-        return new ResponseEntity<>(HttpStatus.OK);
+        try {
+            chartService.delete(id);
+            System.out.println("deleteChart " + id);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
     }
 
 }
