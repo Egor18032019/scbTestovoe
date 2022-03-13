@@ -11,6 +11,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.UUID;
 
+import static com.scb.contour.utils.Const.MAXHEIGHT;
+import static com.scb.contour.utils.Const.MAXWIDTH;
+
 
 @Service
 public class ChartService {
@@ -22,9 +25,8 @@ public class ChartService {
 
 
     public String createNewChart(int width, int height) throws ValidationException {
-        int MAXWIDTH = 20000;
-        int MAXHEIGHT = 50000;
-        if (validateChartSize(width, height, MAXWIDTH, MAXHEIGHT)) {
+        boolean isRightSize = validateChartSize(width, height, MAXWIDTH, MAXHEIGHT);
+        if (isRightSize) {
             String identifier = UUID.randomUUID().toString();
             fileStorageService.createBmp(identifier, width, height);
 //        В теле ответа возвращается {id} — уникальный идентификатор изображения в строковом представлении.
@@ -38,23 +40,34 @@ public class ChartService {
                             int width, int height,
                             byte[] image) throws IOException, ValidationException, NotFoundException {
 
+        Path isExists = fileStorageService.fileExists(id);
+        boolean isHaveThisIdForFileStorage = isExists != null;
+        System.out.println("isHaveThisIdForFileStorage " + isHaveThisIdForFileStorage);
+        if (isHaveThisIdForFileStorage) {
+            BufferedImage bmpImage = ImageIO.read(isExists.toFile());
 
-        boolean isRightCoordinate = validateCoordinateChats(x, y, width, height);
-        if (isRightCoordinate) {
-            // передаём файл и путь что бы второй раз к этому не обращаться
-            fileStorageService.insertPartBmp(id, x, y, width, height, image);
+            boolean isRightCoordinate = validateCoordinateChats(x, y, width, height, bmpImage.getWidth(), bmpImage.getHeight());
+            System.out.println("isRightCoordinate " + isRightCoordinate);
+            if (isRightCoordinate) {
+                fileStorageService.insertPartBmp(isExists, bmpImage, x, y, width, height, image);
+            } else {
+                System.out.println("ValidationException");
+                throw new ValidationException("Не правильные координаты или размеры ");
+            }
         } else {
-            throw new ValidationException("Не правильные координаты или размеры ");
+            System.out.println("NotFoundException");
+            throw new NotFoundException("Нет файла с таким названием " + id);
         }
     }
 
 
     //    Тело ответа: изображение в формате BMP (цвет в RGB, 24 бита на 1 пиксель).
-    public byte[] getFragment(String id, int x, int y, int width, int height) throws IOException {
+    public byte[] getFragment(String id, int x, int y, int width, int height) throws IOException, ValidationException, NotFoundException {
         Path isExists = fileStorageService.fileExists(id);
-        if (isExists != null) {
+        boolean isHaveThisIdForFileStorage = fileStorageService.fileExists(id) != null;
+        if (isHaveThisIdForFileStorage) {
             BufferedImage chart = ImageIO.read(isExists.toFile());
-            boolean isRightCoordinate = validateCoordinateChats(x, y, width, height);
+            boolean isRightCoordinate = validateCoordinateChats(x, y, width, height, chart.getWidth(), chart.getHeight());
             if (isRightCoordinate) {
                 // передаём файл и путь что бы второй раз к этому не обращаться
                 return fileStorageService.getFilePart(chart, x, y, width, height);
@@ -66,7 +79,7 @@ public class ChartService {
         }
     }
 
-    public void delete(String id) {
+    public void delete(String id) throws NotFoundException {
         fileStorageService.deleteFile(id);
     }
 
@@ -76,8 +89,14 @@ public class ChartService {
         return isRightSizeChart;
     }
 
-    private boolean validateCoordinateChats(int x, int y, int fileWidth, int fileHeight) {
-        boolean isRightCoordinatefragmentChart = x <= fileWidth && y <= fileHeight && x >= 0 && y >= 0;
+    private boolean validateCoordinateChats(int x, int y, int fragmentFileWidth, int fragmentFileHeight, int fileWidth, int fileHeight) {
+        System.out.println("fileWidth " + fileWidth + " fragmentFileWidth " + fragmentFileWidth);
+        System.out.println("fileHeight " + fileHeight + " fragmentFileHeight " + fragmentFileHeight);
+        boolean isRightCoordinatefragmentChart =
+                x >= 0 && y >= 0 &&
+                        x <= fileWidth && y <= fileHeight &&
+                        fileWidth >= fragmentFileWidth && fileHeight >= fragmentFileHeight &&
+                        fileWidth > 0 && fileHeight > 0;
         return isRightCoordinatefragmentChart;
     }
 

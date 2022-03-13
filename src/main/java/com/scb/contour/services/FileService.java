@@ -11,10 +11,9 @@ public interface FileService {
 
     boolean deleteFile(String id);
 
-    void insertPartBmp(String id, int x,
-                       int y, int width, int height, byte[] imageBytes) throws IOException;
-
     byte[] getFilePart(BufferedImage file, int x, int y, int width, int height) throws IOException;
 
     Path fileExists(String id);
+
+    void insertPartBmp(Path isExists, BufferedImage bmpImage, int x, int y, int width, int height, byte[] image) throws IOException;
 }

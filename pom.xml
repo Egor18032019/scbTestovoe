@@ -9,8 +9,8 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.scb</groupId>
-	<artifactId>contour</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<artifactId>chartographer</artifactId>
+	<version>1.0.0</version>
 	<name>contour</name>
 	<description>Project Chartographer</description>
 	<properties>
@@ -33,12 +33,15 @@
             <version>5.3.16</version>
         </dependency>
     </dependencies>
-
+<!--	java -jar chartographer-1.0.0.jar \path\to\content\folder-->
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<outputDirectory>target/path/to/content/folder</outputDirectory>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
