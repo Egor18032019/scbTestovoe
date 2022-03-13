@@ -73,15 +73,9 @@ public class FileStorageService implements FileService {
     }
 
     @Override
-    public void insertPartBmp(String id,
+    public void insertPartBmp(Path isExists, BufferedImage bmpImage,
                               int x, int y,
                               int width, int height, byte[] imageBytes) throws IOException {
-        System.out.println("1");
-        Path isExists = fileExists(id);
-        System.out.println("Path" + isExists.toString());
-
-        BufferedImage bmpImage = ImageIO.read(isExists.toFile());
-        System.out.println("bmpImage " + bmpImage.getHeight());
 
         //перевели старый файл в поток
         ImageOutputStream output = ImageIO.createImageOutputStream(isExists.toFile());
